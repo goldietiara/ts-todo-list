@@ -5,22 +5,30 @@ import Link from "next/link";
 import { todo } from "node:test";
 import React, { useState } from "react";
 
+function countTodos() {
+  // "use client";
+  // const [count, setCount] = useState<number>(1);
+}
+
 function getTodos() {
   return prisma.todo.findMany();
 }
 
-export default async function Home() {
-  // const [count, setCount] = useState<number>(1);
+async function toggleTodo(id: string, complete: boolean) {
+  "use server";
+  await prisma.todo.update({ where: { id }, data: { complete } });
+  console.log(id, complete);
+}
 
+export default async function Home() {
   const todos = await getTodos();
   // await prisma.todo.create({ data: { title: "ngopi", complete: false } });
-
   return (
     <div className="w-full h-96 flex justify-center items-center">
       <div className=" w-8/12 h-96 px-5 flex flex-col bg-orange-100 gap-5">
         <div className=" flex justify-end py-3 font-medium items-center relative">
           <h1 className=" text-3xl text-orange-500 font-bold lg:absolute lg:top-4 lg:left-0 lg:right-0 md:absolute md:top-4 md:left-0 md:right-0">
-            remaining todos:
+            Remaining Todos: {todos.length}
           </h1>
 
           <Link href={"/new"}>
@@ -34,7 +42,9 @@ export default async function Home() {
         </div>
         <div className=" h-full w-full overflow-y-auto overflow-x-hidden flex flex-col items-center gap-2">
           {todos.map((v, i, a) => {
-            return <TodoItems key={v.id} {...v}></TodoItems>;
+            return (
+              <TodoItems key={v.id} {...v} toggleTodo={toggleTodo}></TodoItems>
+            );
           })}
         </div>
       </div>
